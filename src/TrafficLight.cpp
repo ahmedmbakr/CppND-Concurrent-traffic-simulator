@@ -15,8 +15,8 @@ T MessageQueue<T>::receive()
 
     _condition_variable.wait(uLock, [this]{ return !this->_queue.empty(); });
 
-    T message = std::move(_queue.pop_front());
-
+    T message = std::move(_queue.front());
+    _queue.pop_front();
     return message;
 }
 
