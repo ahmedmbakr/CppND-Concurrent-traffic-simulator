@@ -18,6 +18,15 @@ void MessageQueue<T>::send(T &&msg)
 {
     // FP.4a : The method send should use the mechanisms std::lock_guard<std::mutex> 
     // as well as _condition.notify_one() to add a new message to the queue and afterwards send a notification.
+    //TODO: may need to add a sleep for a small time
+    //std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    
+    //perform modifications under the lock
+    std::lock_guard<std::mutex> ulock(_mtx);
+
+    _queue.push_back(std::move(msg));
+
+    _condition_variable.notify_one();
 }
 
 
@@ -75,7 +84,8 @@ void TrafficLight::cycleThroughPhases()
             rdm_sleep_time_ms = uniform_dist(e1);
 
             this->_currentPhase = this->_currentPhase == TrafficLightPhase::red? TrafficLightPhase::green : TrafficLightPhase::red;
-            //TODO: send an update message to the message queue using move semantics
+            TrafficLightPhase messagePhase = this->_currentPhase;
+            _messageQueue.send(std::move(messagePhase));
         }
     }
 }
