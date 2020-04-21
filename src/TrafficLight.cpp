@@ -43,7 +43,8 @@ TrafficLightPhase TrafficLight::getCurrentPhase()
 
 void TrafficLight::simulate()
 {
-    // FP.2b : Finally, the private method „cycleThroughPhases“ should be started in a thread when the public method „simulate“ is called. To do this, use the thread queue in the base class. 
+    // FP.2b : Finally, the private method „cycleThroughPhases“ should be started in a thread when the public method „simulate“ is called. To do this, use the thread queue in the base class.
+    threads.emplace_back(std::thread(&TrafficLight::cycleThroughPhases, this)); 
 }
 
 // virtual function which is executed in a thread
@@ -52,6 +53,30 @@ void TrafficLight::cycleThroughPhases()
     // FP.2a : Implement the function with an infinite loop that measures the time between two loop cycles 
     // and toggles the current phase of the traffic light between red and green and sends an update method 
     // to the message queue using move semantics. The cycle duration should be a random value between 4 and 6 seconds. 
-    // Also, the while-loop should use std::this_thread::sleep_for to wait 1ms between two cycles. 
+    // Also, the while-loop should use std::this_thread::sleep_for to wait 1ms between two cycles.
+    std::cout<< "enter cycleThroughPhases\n";
+    // Seed with a real random value, if available
+    std::random_device r;
+ 
+    // Choose a random mean between 1 and 6
+    std::default_random_engine e1(r());
+    std::uniform_int_distribution<int> uniform_dist(4000, 6000);
+    
+    int timePassed_1ms = 0;
+    int rdm_sleep_time_ms = 7000;//Any value greater than 6000 to force the if condition inside the while loop to excute the very first time
+    while(true)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        ++timePassed_1ms;
+        if(timePassed_1ms >= rdm_sleep_time_ms)
+        {
+            timePassed_1ms = 0;
+            //generate a random integer number between 4, and 6 seconds
+            rdm_sleep_time_ms = uniform_dist(e1);
+
+            this->_currentPhase = this->_currentPhase == TrafficLightPhase::red? TrafficLightPhase::green : TrafficLightPhase::red;
+            //TODO: send an update message to the message queue using move semantics
+        }
+    }
 }
 
