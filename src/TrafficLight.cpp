@@ -42,6 +42,7 @@ void MessageQueue<T>::send(T &&msg)
 
 TrafficLight::TrafficLight()
 {
+    std::unique_lock<std::mutex> uLock(_mtx);
     _currentPhase = TrafficLightPhase::red;
 }
 
@@ -63,6 +64,7 @@ void TrafficLight::waitForGreen()
 
 TrafficLightPhase TrafficLight::getCurrentPhase()
 {
+    std::unique_lock<std::mutex> uLock(_mtx);
     return _currentPhase;
 }
 
@@ -87,8 +89,8 @@ void TrafficLight::cycleThroughPhases()
     std::default_random_engine e1(r());
     std::uniform_int_distribution<int> uniform_dist(4000, 6000);
     
-    int timePassed_1ms = 0;
-    int rdm_sleep_time_ms = 7000;//Any value greater than 6000 to force the if condition inside the while loop to excute the very first time
+    int timePassed_1ms = 7000;//Any value greater than 6000 to force the if condition inside the while loop to excute the very first time
+    int rdm_sleep_time_ms = 0;
     while(true)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
